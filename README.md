@@ -1,15 +1,15 @@
+<h2> HAI <img src="https://raw.githubusercontent.com/ABSphreak/ABSphreak/master/gifs/Hi.gif" width="30px"></h2>
+
+This is my simple project for blockchain but only for block schanner with list of requirement is bellow of this readme
+
 ## ======> RUN PROJECT <========
 
-project block scanner you can run using the following command
-
-download all depenencies project using the following command
+project block scanner you can run using the following command, download all depenencies project using the following command
 ```bash
 $ go mod download
 ```
 
-completely setup configuration for your project
-
-after all is ready, run the following command
+completely setup configuration for your project, after all is ready, run the following command
 
 #### Running mailer is on
 ```bash
