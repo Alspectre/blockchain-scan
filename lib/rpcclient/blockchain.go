@@ -21,16 +21,17 @@ var (
 
 func InitConfig(bc []models.BlockchainCurrency) *ClientType {
 	setting := &ClientType{}
-	// var params []models.BlockchainCurrency
-	for _, v := range bc {
-		// if v.Options != "" {
-		// 	params[i] = v
-		// } else {
-		setting.Eth = v
-		// 	}
+	var params []models.BlockchainCurrency
+	for i, v := range bc {
+		contracts := optionCurrencies(v)
+		if contracts != nil && contracts.GasLimit != "" {
+			params[i] = v
+		} else {
+			setting.Eth = v
+		}
 	}
 
-	// setting.Erc20 = params
+	setting.Erc20 = params
 
 	return setting
 }
@@ -60,10 +61,9 @@ func (service *ClientType) LatestBlockNumber(server string) (int64, error) {
 	return utils.ConvertFromHex(heightString), nil
 }
 
-func (service *ClientType) FetchBlock(server string, height int) (interface{}, error) {
+func (service *ClientType) FetchBlock(server string, height int) ([]TransactionDetail, error) {
 	var params []interface{}
 	var response ResponseTransaction
-	// var transactionDetail []TransactionDetail
 	heightOnHex := utils.ConvertToHex(height)
 	params = append(params, fmt.Sprintf("0x%s", heightOnHex))
 	params = append(params, true)
@@ -129,7 +129,7 @@ func (service *ClientType) parsingTransactionDetail(server string, transactions 
 			transactionDetail[i].GasPrice = strconv.FormatInt(utils.ConvertFromHex(v.GasPrice), 10)
 			transactionDetail[i].Nonce = strconv.FormatInt(utils.ConvertFromHex(v.Nonce), 10)
 			transactionDetail[i].ContractAddress = tx.ContractAddress
-			transactionDetail[i].Status = tx.Status
+			transactionDetail[i].Status = strconv.FormatInt(utils.ConvertFromHex(tx.Status), 10)
 			transactionDetail[i].Currency = currencies
 		}
 	}
@@ -142,7 +142,6 @@ func fetchTransactionReceipt(tx_id string, server string) (*ReceiptTransaction, 
 	var responseData ResponseRPC
 	var resultTransaction ReceiptTransaction
 	params = append(params, tx_id)
-	fmt.Println(server)
 	err := JsonRpc(server, "eth_getTransactionReceipt", params, &responseData)
 	if err != nil {
 		return nil, err

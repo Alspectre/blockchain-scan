@@ -81,7 +81,7 @@ func main() {
 			if err != nil {
 				fmt.Println("Error:", err)
 			}
-			fmt.Println(lastBlock)
+
 			if int64(v.Height) < lastBlock-3 {
 				bc_service.Fetch(v.Height)
 			}
