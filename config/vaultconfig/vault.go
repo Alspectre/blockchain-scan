@@ -2,6 +2,7 @@ package vaultconfig
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"goblock/utils"
 	"io/ioutil"
@@ -73,6 +74,23 @@ func Setup() {
 	convert := convert(init)
 	vaultSecretsPath := "vault_secrets.yml"
 
+	unseal_key := vaultInitialization(convert, vaultSecretsPath)
+
+	vaultRootToken := unseal_key["root_token"]
+	unsealKeys := unseal_key["unseal_keys_b64"]
+
+	unseal(*convert, unsealKeys)
+
+	fmt.Println("======= vault login =======")
+	VaultExec(fmt.Sprintf("vault login %s", vaultRootToken))
+
+	fmt.Println("======= vault configure endpoints =======")
+	secrets("enable", []string{"totp", "transit"}, "")
+	secrets("disable", []string{"secret"}, "")
+	secrets("enable", []string{"kv"}, "-version=2 -path=secret")
+}
+
+func vaultInitialization(convert *VaultInterface, vaultSecretsPath string) map[string]interface{} {
 	var unseal_key map[string]interface{}
 
 	if !convert.Initialized {
@@ -82,37 +100,60 @@ func Setup() {
 		err := ioutil.WriteFile(vaultSecretsPath, vaultInit.Bytes(), 0644)
 		if err != nil {
 			fmt.Println("Error writing to file:", err)
-			return
+			return nil
 		}
 
 		err = yaml.Unmarshal(vaultInit.Bytes(), &unseal_key)
 		if err != nil {
 			fmt.Println("Error parsing YAML:", err)
-			return
+			return nil
 		}
 		fmt.Println("============== Initialization END ===============")
 	} else {
 		vaultSecrets, err := ioutil.ReadFile(vaultSecretsPath)
 		if err != nil {
 			fmt.Println("Vault keys are missing")
-			return
+			return nil
 		}
 		err = yaml.Unmarshal(vaultSecrets, &unseal_key)
 		if err != nil {
 			fmt.Println("Error parsing YAML:", err)
+			return nil
+		}
+	}
+
+	return unseal_key
+}
+
+func unseal(convert VaultInterface, unsealKeys interface{}) {
+	if convert.Sealed {
+		fmt.Println("============= Unsealing START ===============")
+		jsonData, err := json.Marshal(unsealKeys)
+		if err != nil {
+			fmt.Println("Error marshaling data to JSON:", err)
 			return
 		}
 
-	}
-
-	vaultRootToken := unseal_key["root_token"]
-	unsealKeys := unseal_key["unseal_keys_b64"]
-
-	if convert.Sealed {
-		fmt.Println("============= Unsealing START ===============")
-		fmt.Println(vaultRootToken)
-		fmt.Println(unsealKeys)
+		var array []string
+		if err := json.Unmarshal(jsonData, &array); err != nil {
+			fmt.Println("Error unmarshaling JSON to array:", err)
+			return
+		}
+		for i, v := range array {
+			if i < 3 {
+				comand := fmt.Sprintf("vault operator unseal %s", v)
+				VaultExec(comand)
+			}
+		}
 		fmt.Println("============== Unsealing END ===============")
+	} else {
+		fmt.Println("============== Vault is unseal ===============")
+	}
+}
+
+func secrets(command string, endpoints []string, options string) {
+	for _, v := range endpoints {
+		VaultExec(fmt.Sprintf("vault secrets %s %s %s", command, v, options))
 	}
 }
 
