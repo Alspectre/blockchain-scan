@@ -18,14 +18,15 @@ var Commands = []CommandDefinition{
 		Use:   "db:create",
 		Short: "Run create database",
 		Run: func(cmd *cobra.Command, args []string) {
+			migrate.Create()
 			fmt.Println("Database created")
-			migrate.Migrate()
 		},
 	},
 	{
 		Use:   "db:migrate",
 		Short: "Run migrate table",
 		Run: func(cmd *cobra.Command, args []string) {
+			migrate.Migrate()
 			fmt.Println("Table succefullty migrate")
 		},
 	},
