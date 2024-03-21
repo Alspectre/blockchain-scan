@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"goblock/utils"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -97,7 +96,7 @@ func vaultInitialization(convert *VaultInterface, vaultSecretsPath string) map[s
 		fmt.Println("============= Initialization START ===============")
 		vaultInit := VaultExec("vault operator init -format yaml --recovery-shares=3 --recovery-threshold=2")
 
-		err := ioutil.WriteFile(vaultSecretsPath, vaultInit.Bytes(), 0644)
+		err := os.WriteFile(vaultSecretsPath, vaultInit.Bytes(), 0644)
 		if err != nil {
 			fmt.Println("Error writing to file:", err)
 			return nil
@@ -110,7 +109,7 @@ func vaultInitialization(convert *VaultInterface, vaultSecretsPath string) map[s
 		}
 		fmt.Println("============== Initialization END ===============")
 	} else {
-		vaultSecrets, err := ioutil.ReadFile(vaultSecretsPath)
+		vaultSecrets, err := os.ReadFile(vaultSecretsPath)
 		if err != nil {
 			fmt.Println("Vault keys are missing")
 			return nil

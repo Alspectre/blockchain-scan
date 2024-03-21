@@ -1,10 +1,12 @@
 package migrate
 
 import (
+	"bytes"
 	"fmt"
 	"goblock/db"
 	"log"
 	"os"
+	"os/exec"
 
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
@@ -40,6 +42,13 @@ func Create() {
 
 func Migrate() {
 	Init()
-	dbConnection = db.ConfigDatabase(config, "")
 	fmt.Println("--------- Migrate ---------")
+	databaseSource := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable", config.Username, config.Password, config.Host, config.Port, os.Getenv("DB_NAME"))
+	cmd := exec.Command("migrate", "-path", "db/migration", "-database", databaseSource, "-verbose", "up")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(out)
+	}
 }

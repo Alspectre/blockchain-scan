@@ -23,14 +23,6 @@ var Commands = []CommandDefinition{
 		},
 	},
 	{
-		Use:   "db:migrate",
-		Short: "Run migrate table",
-		Run: func(cmd *cobra.Command, args []string) {
-			migrate.Migrate()
-			fmt.Println("Table succefullty migrate")
-		},
-	},
-	{
 		Use:   "db:drop",
 		Short: "Run vault setup",
 		Run: func(cmd *cobra.Command, args []string) {
