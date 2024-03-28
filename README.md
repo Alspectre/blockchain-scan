@@ -31,3 +31,5 @@ $ go run cmd/blockchain.go
 
 ## UPDATE MINOR
 - configuration vault for setup and unseal
+- change connection database from mysql to pgsql
+- configuration for migration schema
