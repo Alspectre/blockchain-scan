@@ -51,6 +51,3 @@ func (service *BlockchainService) Fetch(height int) {
 	fmt.Println(string(jsonData))
 
 }
-
-func FilterDeposit() {
-}

@@ -2,32 +2,35 @@ package models
 
 import (
 	"fmt"
-	"goblock/config/vaultconfig"
+	"time"
 
 	"github.com/hashicorp/vault/api"
 	"gorm.io/gorm"
 )
 
 type Blockchain struct {
-	ID                 int64   `json:"id" db:"id" gorm:"primaryKey"`
-	Key                string  `json:"key" db:"key" `
-	Name               string  `json:"name" db:"name"`
-	Client             string  `json:"client" db:"client"`
-	Server             string  `omitempty,json:"server"`
-	ServerEncrypted    string  `json:"server_encrypted" db:"server_encrypted"`
-	Height             int     `json:"height" db:"height"`
-	CollectionGasSpeed string  `json:"collection_gas_speed" db:"collection_gas_speed"`
-	WithdrawalGasSpeed string  `json:"withdrawal_gas_speed" db:"withdrawal_gas_speed"`
-	Protocol           string  `json:"protocol" db:"protocol"`
-	MinConfirmation    int8    `json:"min_confirmation" db:"min_confirmation"`
-	MinDepositAmount   float64 `json:"min_deposit_amount" db:"min_deposit_amount"`
-	WithdrawFee        float64 `json:"withdraw_fee" db:"withdraw_fee"`
-	MinWithdrawAmount  float64 `json:"min_withdraw_amount" db:"min_withdraw_amount"`
-	Status             string  `json:"status" db:"status"`
-	BlockchainGroup    int     `json:"blockchain_group" db:"blockchain_group"`
+	ID              int64     `json:"id" db:"id" gorm:"primaryKey"`
+	Key             string    `json:"key" db:"key" `
+	Name            string    `json:"name" db:"name"`
+	Client          string    `json:"client" db:"client"`
+	Server          string    `omitempty,json:"server"`
+	Height          int       `json:"height" db:"height"`
+	Protocol        string    `json:"protocol" db:"protocol"`
+	MinConfirmation int       `json:"min_confirmation" db:"min_confirmation"`
+	Status          string    `json:"status" db:"status"`
+	BlockchainGroup int       `json:"blockchain_group" db:"blockchain_group"`
+	CreatedAt       time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type Blockchains []Blockchain
+
+func CreateBlockchain(db *gorm.DB, blockchain *Blockchain) error {
+	if err := db.Create(blockchain).Error; err != nil {
+		return err
+	}
+	return nil
+}
 
 func GetAllBlockchain(db *gorm.DB) ([]Blockchain, error) {
 	var blockchains Blockchains
@@ -40,11 +43,6 @@ func GetAllBlockchainWitHDecrypt(db *gorm.DB, client *api.Client, status string)
 	var blockchains Blockchains
 	_ = db.Where("status = ?", status).Find(&blockchains)
 
-	for i, v := range blockchains {
-		decrypt, _ := vaultconfig.DecryptValue(client, v.ServerEncrypted)
-		blockchains[i].Server = decrypt
-	}
-
 	return blockchains, nil
 }
 
@@ -55,8 +53,7 @@ func UpdateHeight(db *gorm.DB, client *api.Client, id int, height int) string {
 	}
 
 	if err := db.Model(&blockchain).Update("height", height); err != nil {
-		server, _ := vaultconfig.DecryptValue(client, blockchain.ServerEncrypted)
-		fmt.Printf("Blockchain %s updated on hight %d", server, blockchain.Height)
+		fmt.Printf("Blockchain updated on hight %d", blockchain.Height)
 	}
 	return string(blockchain.Height)
 }

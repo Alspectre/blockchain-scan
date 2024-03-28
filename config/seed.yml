@@ -1,0 +1,25 @@
+blockchains:
+  - key: eth-mainnet
+    name: eth blockchain
+    client: rpcclient
+    server: https://eth-pokt.nodies.app
+    height: 19531030
+    protocol: ERC20
+    min_confirmation: 2
+    status: enabled
+    blockchain_group: 1
+
+currencies:
+  - name: eth
+    precision: 4
+    icon_url: https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png
+    market_url: https://coinmarketcap.com/currencies/ethereum
+
+blockchain_currencies:
+  - currency_id: eth
+    blockchain_key: eth-mainnet
+    parent_id: 
+    base_factor: 18
+    status: enabled
+    options: {}
+    smart_contract: 

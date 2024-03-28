@@ -6,21 +6,13 @@ import (
 )
 
 type BlockchainCurrency struct {
-	CurrencyId            string     `json:"currency_id" db:"currency_id"`
-	BlockchainKey         string     `json:"blockchain_key" db:"blockchain_key"`
-	ParentID              string     `json:"parent_id" db:"parent_id"`
-	DepositFee            float64    `json:"deposit_fee" db:"deposit_fee"`
-	MinDepositAmount      float64    `json:"min_deposit_amount" db:"min_deposit_amount"`
-	MinCollectionAmount   float64    `json:"min_collection_amount" db:"min_collection_amount"`
-	WithdrawFee           float64    `json:"withdraw_fee" db:"withdraw_fee"`
-	MinWithdrawAmount     float64    `json:"min_withdraw_amount" db:"min_withdraw_amount"`
-	DepositEnabled        bool       `json:"deposit_enabled" db:"deposit_enabled"`
-	WithdrawalEnabled     bool       `json:"withdrawal_enabled" db:"withdrawal_enabled"`
-	AutoUpdateFeesEnabled bool       `json:"auto_update_fees_enabled" db:"auto_update_fees_enabled"`
-	BaseFactor            int64      `json:"base_factor" db:"base_factor"`
-	Status                string     `json:"status" db:"status"`
-	Options               []byte     `gorm:"type:json" db:"options"`
-	Blockchain            Blockchain `gorm:"foreignKey:BlockchainKey;references:key"`
+	CurrencyId    string     `json:"currency_id" db:"currency_id"`
+	BlockchainKey string     `json:"blockchain_key" db:"blockchain_key"`
+	ParentID      string     `json:"parent_id" db:"parent_id"`
+	BaseFactor    int64      `json:"base_factor" db:"base_factor"`
+	Status        string     `json:"status" db:"status"`
+	Options       []byte     `gorm:"type:json" db:"options"`
+	Blockchain    Blockchain `gorm:"foreignKey:BlockchainKey;references:key"`
 }
 
 type Option struct {

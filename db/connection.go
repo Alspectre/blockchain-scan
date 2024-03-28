@@ -32,14 +32,15 @@ func ConfigDatabase(config DatabaseConfig, Database string) *gorm.DB {
 	dbConfig = config
 	once.Do(
 		func() {
+
 			if Database != "" {
 				dataSource = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", dbConfig.Host, dbConfig.Username, dbConfig.Password, Database, dbConfig.Port)
 				checkDatabaseExists(Database, config)
 			} else {
+				fmt.Println("Database not exists")
 				dataSource = fmt.Sprintf("host=%s user=%s password=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", dbConfig.Host, dbConfig.Username, dbConfig.Password, dbConfig.Port)
 				checkDatabaseExists(Database, config)
 			}
-
 			dbConnection, err = gorm.Open(postgres.Open(dataSource), &gorm.Config{})
 			if err != nil {
 				log.Fatalf("%v", err)
@@ -71,8 +72,8 @@ func GetDatabaseConnection() (*gorm.DB, error) {
 }
 
 func checkDatabaseExists(dbName string, config DatabaseConfig) (bool, error) {
-	dataSource = fmt.Sprintf("host=%s user=%s password=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", config.Host, config.Username, config.Password, config.Port)
-	db, err := sql.Open(config.Driver, dataSource)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", config.Host, config.Username, config.Password, config.Port)
+	db, err := sql.Open(config.Driver, dsn)
 	if err != nil {
 		err = fmt.Errorf("error connecting to database: %w", err)
 		return false, err
@@ -92,8 +93,8 @@ func checkDatabaseExists(dbName string, config DatabaseConfig) (bool, error) {
 }
 
 func CreateDatabase(config DatabaseConfig, dbName string) error {
-	dataSource = fmt.Sprintf("host=%s user=%s password=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", config.Host, config.Username, config.Password, config.Port)
-	db, err := sql.Open(config.Driver, dataSource)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", config.Host, config.Username, config.Password, config.Port)
+	db, err := sql.Open(config.Driver, dsn)
 	if err != nil {
 		err = fmt.Errorf("error connecting to database: %w", err)
 		return err
@@ -107,4 +108,15 @@ func CreateDatabase(config DatabaseConfig, dbName string) error {
 	}
 
 	return err
+}
+
+func Truncate(tables []string, connect *gorm.DB) {
+	for _, table := range tables {
+		result := connect.Exec("TRUNCATE TABLE " + table + " RESTART IDENTITY")
+		if result.Error != nil {
+			fmt.Printf("failed to truncate table %s: %v\n", table, result.Error)
+		} else {
+			fmt.Printf("table %s truncated successfully\n", table)
+		}
+	}
 }

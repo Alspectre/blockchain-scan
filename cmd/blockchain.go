@@ -49,16 +49,8 @@ func main() {
 			log.Fatalf("Error retrieving blockchain data: %v", err)
 		}
 		for _, v := range blockchains {
-			server, err := vaultconfig.DecryptValue(testVault, v.ServerEncrypted)
-			if err != nil {
-				fmt.Println("error on decrypted data vault on blockchain currencies %s", v.Key)
-				fmt.Println(err)
-				continue
-			}
-
 			fmt.Printf("Start fetching %s on block %d", v.Key, v.Height)
 			fmt.Println("")
-			v.Server = server
 
 			if v.Server == "" {
 				fmt.Println("Server is null on blockchain currencies %s", v.Key)
@@ -75,7 +67,7 @@ func main() {
 			}
 
 			bc_service := blockchain.NewBlockchainService(v, connectionDb, testVault, handler)
-			fmt.Printf("Fetching block %s on height %d with server %s", v.Client, v.Height, server)
+			fmt.Printf("Fetching block %s on height %d with server %s", v.Client, v.Height, v.Server)
 			fmt.Println("")
 			lastBlock, err := bc_service.LatestBlockNumber()
 			if err != nil {
