@@ -4,23 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"goblock/db/models"
-	"goblock/lib/rpcclient"
+	"goblock/services/handlers"
 	"log"
 
-	"github.com/hashicorp/vault/api"
 	"gorm.io/gorm"
 )
 
 // NewBlockchainService creates a new BlockchainService instance
-func NewBlockchainService(blockchain models.Blockchain, db *gorm.DB, vault *api.Client, handler *rpcclient.ClientType) *BlockchainService {
+func NewBlockchainService(blockchain models.Blockchain, db *gorm.DB) *BlockchainService {
 	service := &BlockchainService{
 		blockchain: blockchain,
 	}
 
-	blockchainCurrencies, _ := models.GetActiveBlockchainCurrencies(db, vault)
+	blockchainCurrencies, _ := models.GetActiveBlockchainCurrencies(db, blockchain.Key)
 	service.blockchainCurrencies = blockchainCurrencies
 	for _, currency := range blockchainCurrencies {
 		service.currencies = append(service.currencies, currency.CurrencyId)
+	}
+
+	handler := handlers.Handler(blockchain.Client, blockchainCurrencies)
+	if handler == nil {
+		fmt.Printf("handling blockchain key %s error", blockchain.Key)
 	}
 
 	service.adapter = *handler
@@ -45,9 +49,8 @@ func (service *BlockchainService) Fetch(height int) {
 
 	jsonData, err := json.MarshalIndent(request, "", "    ")
 	if err != nil {
+		fmt.Println(jsonData)
 		fmt.Println("Error:", err)
 	}
-
-	fmt.Println(string(jsonData))
 
 }

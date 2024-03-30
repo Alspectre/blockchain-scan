@@ -7,7 +7,7 @@ import (
 
 func Handler(packageName string, bc []models.BlockchainCurrency) *rpcclient.ClientType {
 	switch packageName {
-	case "rpc":
+	case "rpcclient":
 		rpcClient := rpcclient.InitConfig(bc)
 
 		return rpcClient

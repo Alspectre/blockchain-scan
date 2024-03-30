@@ -61,7 +61,7 @@ func (service *ClientType) LatestBlockNumber(server string) (int64, error) {
 	return utils.ConvertFromHex(heightString), nil
 }
 
-func (service *ClientType) FetchBlock(server string, height int) ([]TransactionDetail, error) {
+func (service *ClientType) FetchBlock(server string, height int) (*[]TransactionDetail, error) {
 	var params []interface{}
 	var response ResponseTransaction
 	heightOnHex := utils.ConvertToHex(height)
@@ -85,15 +85,10 @@ func (service *ClientType) FetchBlock(server string, height int) ([]TransactionD
 		return nil, err
 	}
 
-	transactionParse, err := service.parsingTransactionDetail(server, transaction)
-	if err != nil {
-		return nil, err
-	}
-
-	return transactionParse, nil
+	return &transaction.Transactions, nil
 }
 
-func (service *ClientType) parsingTransactionDetail(server string, transactions Transaction) ([]TransactionDetail, error) {
+func (service *ClientType) parsingTransactionDetail(server string, transactions Transaction) (*[]TransactionDetail, error) {
 	var transactionDetail []TransactionDetail
 	var currencies string
 
@@ -134,7 +129,7 @@ func (service *ClientType) parsingTransactionDetail(server string, transactions 
 		}
 	}
 
-	return transactionDetail, nil
+	return &transactionDetail, nil
 }
 
 func fetchTransactionReceipt(tx_id string, server string) (*ReceiptTransaction, error) {

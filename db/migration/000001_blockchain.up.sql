@@ -1,6 +1,6 @@
 CREATE TABLE blockchains
 (
-    id bigint primary key,
+    id bigserial primary key,
     key varchar(100) not null,
     name varchar(150) not null,
     client varchar(75) not null,

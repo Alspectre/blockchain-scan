@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/vault/api"
 	"gorm.io/gorm"
 )
 
@@ -39,14 +38,14 @@ func GetAllBlockchain(db *gorm.DB) ([]Blockchain, error) {
 	return blockchains, nil
 }
 
-func GetAllBlockchainWitHDecrypt(db *gorm.DB, client *api.Client, status string) ([]Blockchain, error) {
+func GetAllBlockchainWitHDecrypt(db *gorm.DB, status string) ([]Blockchain, error) {
 	var blockchains Blockchains
 	_ = db.Where("status = ?", status).Find(&blockchains)
 
 	return blockchains, nil
 }
 
-func UpdateHeight(db *gorm.DB, client *api.Client, id int, height int) string {
+func UpdateHeight(db *gorm.DB, id int, height int) string {
 	var blockchain Blockchain
 	if err := db.First(&blockchain, id).Error; err != nil {
 		fmt.Printf("Failed to find blockchain with ID %d: %v\n", id, err)

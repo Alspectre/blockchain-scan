@@ -1,6 +1,6 @@
 CREATE TABLE currencies
 (
-    id bigint primary key,
+    id bigserial primary key,
     name varchar(100) not null,
     precision int not null default 0,
     icon_url varchar null,
