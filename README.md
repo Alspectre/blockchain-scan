@@ -33,3 +33,5 @@ $ go run cmd/blockchain.go
 - configuration vault for setup and unseal
 - change connection database from mysql to pgsql
 - configuration for migration schema
+- building transaction data after fetching
+- change calling function and change function to global accessable data
