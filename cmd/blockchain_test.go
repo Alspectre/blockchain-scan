@@ -7,17 +7,16 @@ import (
 	"goblock/services/blockchain"
 	"log"
 	"runtime"
-	"time"
+	"testing"
 
 	"github.com/joho/godotenv"
 )
 
 var (
-	run    bool = true
-	params string
+	running bool = true
 )
 
-func main() {
+func mainTest() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file:", err)
@@ -32,10 +31,7 @@ func main() {
 
 	log.Printf("Try to get all data blockchain")
 
-	for run {
-		runtime.GC()
-		var m runtime.MemStats
-		runtime.ReadMemStats(&m)
+	for running {
 		blockchains, err := models.GetAllBlockchainWitHDecrypt(connectionDb, "enabled")
 		if err != nil {
 			log.Fatalf("Error retrieving blockchain data: %v", err)
@@ -60,18 +56,35 @@ func main() {
 
 			if int64(v.Height) < lastBlock-3 {
 				bc_service.Fetch(v.Height)
-				fmt.Printf("Done fetching %s on block %d", v.Key, v.Height)
-				fmt.Println("")
-				models.UpdateHeight(connectionDb, int(v.ID), int(v.Height+1))
-			} else if lastBlock-3 == int64(v.Height) {
-				time.Sleep(5 * time.Second)
 			}
+			fmt.Printf("Done fetching %s on block %d", v.Key, v.Height)
+			fmt.Println("")
+			models.UpdateHeight(connectionDb, int(v.ID), int(v.Height+1))
 			fmt.Println("")
 		}
 		// time.Sleep(1 * time.Second)
 	}
 
-	if !run {
+	if !running {
 		fmt.Printf("Blockchain Service has Stopped")
+	}
+}
+
+func BenchmarkMemoryConsumption(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		// Perform GC to get accurate memory consumption
+		runtime.GC()
+		var m0, m1 runtime.MemStats
+		runtime.ReadMemStats(&m0)
+
+		// Run the main function
+		mainTest()
+
+		// Read memory stats again after running main function
+		runtime.ReadMemStats(&m1)
+
+		// Calculate memory consumed
+		memConsumed := m1.TotalAlloc - m0.TotalAlloc
+		b.ReportMetric(float64(memConsumed), "bytes")
 	}
 }

@@ -85,12 +85,16 @@ func (service *ClientType) FetchBlock(server string, height int) (*[]Transaction
 		return nil, err
 	}
 
-	return &transaction.Transactions, nil
+	transactionParse, err := service.parsingTransactionDetail(server, transaction)
+	if err != nil {
+		return nil, err
+	}
+
+	return transactionParse, nil
 }
 
 func (service *ClientType) parsingTransactionDetail(server string, transactions Transaction) (*[]TransactionDetail, error) {
 	var transactionDetail []TransactionDetail
-	var currencies string
 
 	recordJson, err := json.Marshal(transactions.Transactions)
 	if err != nil {
@@ -103,36 +107,33 @@ func (service *ClientType) parsingTransactionDetail(server string, transactions 
 	}
 
 	for i, v := range transactionDetail {
-		tx, err := fetchTransactionReceipt(v.Hash, server)
-		if err != nil {
-			fmt.Println(err)
-			return nil, err
-		}
-		if tx.ContractAddress != "" {
-			for _, v := range service.Erc20 {
-				currency := optionCurrencies(v)
-				if tx.ContractAddress == currency.Erc20ContractAddress {
-					currencies = v.CurrencyId
-				}
+		if v.Input != "0x" {
+			if len(v.Input) < 75 {
+				continue
 			}
-		} else {
-			currencies = service.Eth.CurrencyId
-		}
-		if v.Currency == "" {
+
 			transactionDetail[i].BlockNumber = strconv.FormatInt(utils.ConvertFromHex(v.BlockNumber), 10)
 			transactionDetail[i].Gas = strconv.FormatInt(utils.ConvertFromHex(v.Gas), 10)
 			transactionDetail[i].GasPrice = strconv.FormatInt(utils.ConvertFromHex(v.GasPrice), 10)
 			transactionDetail[i].Nonce = strconv.FormatInt(utils.ConvertFromHex(v.Nonce), 10)
-			transactionDetail[i].ContractAddress = tx.ContractAddress
-			transactionDetail[i].Status = strconv.FormatInt(utils.ConvertFromHex(tx.Status), 10)
-			transactionDetail[i].Currency = currencies
+			transactionDetail[i].ContractAddress = v.To
+			transactionDetail[i].To = fmt.Sprintf("0x%s", v.Input[34:74])
+			transactionDetail[i].Status = "pending"
+			transactionDetail[i].Currency = ""
+		} else {
+			transactionDetail[i].BlockNumber = strconv.FormatInt(utils.ConvertFromHex(v.BlockNumber), 10)
+			transactionDetail[i].Gas = strconv.FormatInt(utils.ConvertFromHex(v.Gas), 10)
+			transactionDetail[i].GasPrice = strconv.FormatInt(utils.ConvertFromHex(v.GasPrice), 10)
+			transactionDetail[i].Nonce = strconv.FormatInt(utils.ConvertFromHex(v.Nonce), 10)
+			transactionDetail[i].Status = "pending"
+			transactionDetail[i].Currency = service.Eth.CurrencyId
 		}
 	}
 
 	return &transactionDetail, nil
 }
 
-func fetchTransactionReceipt(tx_id string, server string) (*ReceiptTransaction, error) {
+func (service *ClientType) FetchTransactionReceipt(tx_id string, server string) (*ReceiptTransaction, error) {
 	var params []interface{}
 	var responseData ResponseRPC
 	var resultTransaction ReceiptTransaction

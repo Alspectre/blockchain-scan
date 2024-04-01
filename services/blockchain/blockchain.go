@@ -47,10 +47,10 @@ func (service *BlockchainService) Fetch(height int) {
 		log.Println(err)
 	}
 
-	jsonData, err := json.MarshalIndent(request, "", "    ")
+	jsonBytes, err := json.Marshal(request)
 	if err != nil {
-		fmt.Println(jsonData)
+		fmt.Println(string(jsonBytes))
 		fmt.Println("Error:", err)
+		return
 	}
-
 }
